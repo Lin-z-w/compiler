@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "SymbolTable.h"
+#include "InterCode.h"
 
 enum MYTYPE {
     MEMPTY,
@@ -63,11 +64,15 @@ typedef struct inode
     struct inode *parent, *sons, *next;
 
     // info get in semantics
+    // Intergrated attributes
     int canBeLeftVal;
     char* code;
     Type type;
     SymbolTable defList, decList, varList, args;
     struct inode *initExp;
+    InterCodes intercodes;
+
+    // Inherited attributes
 } Node;
 
 typedef Node* SyntaxTree;

@@ -32,17 +32,16 @@ syntax-c: $(YFILE)
 -include $(patsubst %.o, %.d, $(OBJS))
 
 # 定义的一些伪目标
-.PHONY: clean remake test copy
+.PHONY: clean test copy
 clean:
 	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output
 	rm -f $(OBJS) $(OBJS:.o=.d)
 	rm -f $(LFC) $(YFC) $(YFC:.c=.h)
 	rm -f *~
-remake:
-	make clean
-	make
+
 test:
 	./parser ../Test/test1.cmm
+
 copy: 
 	make clean
 	cp -r ../Code /mnt/d/lab2/
