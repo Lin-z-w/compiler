@@ -1,17 +1,21 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
 
 typedef struct Operand_* Operand;
 typedef struct InterCode_ InterCode;
 typedef struct InterCodes_* InterCodes;
 
 struct Operand_ {
-    enum { VARIABLE, CONSTANT, ADDRESS, TEMP} kind;
+    enum { VARIABLE, CONSTANT, ADDRESS, TEMP, LABLE} kind;
     union {
         char* name;
         int value;
+        int lableNo;
         int var_no;
+        int address;
     } u;
 };
 
@@ -20,19 +24,20 @@ struct InterCode_
     enum { LABLECODE, FUNCTIONCODE, ASSIGNCODE, ADDCODE, SUBCODE, MULCODE, DIVCODE, GOTOCODE, 
         IFECODE, IFNECODE, IFGCODE, IFGECODE, IFLCODE, IFLECODE, RETURNCODE, DECCODE, ARGCODE, CALLCODE, PARAMCODE, READCODE, WRITECODE } kind;
     union {
-        struct { Operand lineno; } lable;
-        struct { Operand funcname; } function;
-        struct { Operand right, left; } assign;
-        struct { Operand result, op1, op2; } binop;
-        struct { Operand lineno; } gotoCode;
-        struct { Operand op1, op2, lineno; } ifCode;
-        struct { Operand ret; } returnCode;
-        struct { Operand op, size; } dec;
-        struct { Operand op; } arg;
-        struct { Operand ret, func; } call;
-        struct { Operand op; } param;
-        struct { Operand op; } read;
-        struct { Operand op; } write;
+        struct { Operand right, left; }         assign;
+        struct { Operand result, op1, op2; }    binop;
+        struct { Operand op1, op2, lable; }     ifcode;
+        struct { Operand op, size; }            dec;
+        struct { Operand ret, func; }           call;
+        struct { Operand op; }                  sinop;
+        // struct { Operand funcname; }            function;
+        // struct { Operand lable; }               lable;
+        // struct { Operand lable; }               gotoCode;
+        // struct { Operand ret; }                 returnCode;
+        // struct { Operand op; }                  arg;
+        // struct { Operand op; }                  param;
+        // struct { Operand op; }                  read;
+        // struct { Operand op; }                  write;
     } u;
 };
 
@@ -41,4 +46,17 @@ struct InterCodes_ {
     InterCodes prev, next; 
 };
 
+// construct func
+Operand varOperand(char *name);
+Operand constOperand(int value);
+Operand tmpOperand();
+Operand lableOperand();
+InterCode assignCode(Operand l, Operand r);
+InterCode binopCode(Operand reslut, Operand op1, Operand op2, int operator);
+InterCode sinopCode(Operand op, int kind);
+// InterCode lableCode(Operand lable);
+InterCodes interCodes(InterCode ic);
+
 void insertInterCodes(InterCodes intercodes, InterCodes next);
+void insertInterCode(InterCodes ics, InterCode ic);
+void displayInterCodes(InterCodes ics);

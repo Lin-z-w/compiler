@@ -3,9 +3,8 @@
 #define tableNum 10
 
 SymbolTable symTable[tableNum];
-Type curReturnType;
+Type curReturnType; 
 int tableTop = 0;
-int tmpVarCnt = 0;
 
 void analysisSons(SyntaxTree sons);
 void analysis(SyntaxTree t);

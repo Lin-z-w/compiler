@@ -1,56 +1,152 @@
 #include "translate.h"
 
-InterCodes translate_Exp(SyntaxTree exp, int syntaxNum) {
-    InterCodes result = malloc(sizeof(struct InterCodes_));
-    Operand op = malloc(sizeof(struct Operand_));
-    result->next = NULL;
-    result->prev = NULL;
-    switch (syntaxNum)
-    {
-    // Exp ASSIGNOP Exp
-    case 1:
-        assert(exp->sons->sons->mytype == MID);
+const int acceptFloat = 0, acceptStruct = 0;
+SymbolTable topTable;
 
+InterCodes translate_Cond(SyntaxTree t, Operand lable1, Operand lable2) {
+    switch (t->syntaxNum)
+    {
+    // NOT Exp
+    case 11:
         break;
     // Exp AND Exp 
     case 2:
-
         break;
     // Exp OR Exp
     case 3:
-
         break;
     // Exp RELOP Exp
     case 4:
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
+InterCodes translate_Exp(SyntaxTree exp) {
+    InterCode code;
+    InterCodes result;
+    SyntaxTree exp1, exp2, t;
+    Operand op1, op2, op3;
+    result->next = NULL;
+    result->prev = NULL;
+
+    // init place
+    exp->place = tmpOperand();
+
+    switch (exp->syntaxNum)
+    {
+    // Exp1 ASSIGNOP Exp2
+    case 1:
+        exp1 = exp->sons;
+        exp2 = exp->sons->next->next;
+        // Exp1 must be ID
+        assert(exp1->mytype == MID);
+        // translate exp2
+        result = translate_Exp(exp2);
+        // assign exp1
+        op1 = varOperand(exp1->code);
+        code = assignCode(op1, exp2->place);
+        insertInterCode(result, code);
+        // assign exp->place
+        code = assignCode(exp->place, op1);
+        insertInterCode(result, code);
+        break;
+    // Exp AND Exp 
+    case 2:
+    // Exp OR Exp
+    case 3:
+    // Exp RELOP Exp
+    case 4:
+        op1 = lableOperand();
+        op2 = lableOperand();
+        op3 = constOperand(0);
+        code = assignCode(exp->place, op3);
+        // init place = 0;
+        result = interCodes(code);
+        // translate cond
+        insertInterCodes(result, translate_Cond(exp, op1, op2));
+        // if true place = 1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        op3 = constOperand(1);
+        code = assignCode(exp->place, op3);
+        insertInterCode(result, code);
+        // if false jump to l2
+        code = sinopCode(op2, LABLECODE);
+        insertInterCode(result, code);
         break;
     // Exp PLUS Exp
     case 5:
-
+        exp1 = exp->sons;
+        exp2 = exp->sons->next->next;
+        result = translate_Exp(exp1);
+        insertInterCodes(result, translate_Exp(exp2));
+        code = binopCode(exp->place, exp1->place, exp2->place, ADDCODE);
+        insertInterCode(result, code);
         break;
     // Exp MINUS Exp %prec LOWER_THAN_MINUS 
     case 6:
-
+        exp1 = exp->sons;
+        exp2 = exp->sons->next->next;
+        result = translate_Exp(exp1);
+        insertInterCodes(result, translate_Exp(exp2));
+        code = binopCode(exp->place, exp1->place, exp2->place, SUBCODE);
+        insertInterCode(result, code);
         break;
     // Exp STAR Exp 
     case 7:
-
+        exp1 = exp->sons;
+        exp2 = exp->sons->next->next;
+        result = translate_Exp(exp1);
+        insertInterCodes(result, translate_Exp(exp2));
+        code = binopCode(exp->place, exp1->place, exp2->place, MULCODE);
+        insertInterCode(result, code);
         break;
     // Exp DIV Exp
     case 8:
-
+        exp1 = exp->sons;
+        exp2 = exp->sons->next->next;
+        result = translate_Exp(exp1);
+        insertInterCodes(result, translate_Exp(exp2));
+        code = binopCode(exp->place, exp1->place, exp2->place, DIVCODE);
+        insertInterCode(result, code);
         break;
     // LP Exp RP
     case 9:
-
+        exp1 = exp->sons->next;
+        result = translate_Exp(exp1);
+        code = assignCode(exp->place, exp1->place);
+        insertInterCode(result, code);
         break;
     // MINUS Exp
     case 10:
-
+        exp1 = exp->sons->next;
+        result = translate_Exp(exp1);
+        op1 = constOperand(0);
+        code = binopCode(exp->place, op1, exp1->place, SUBCODE);
+        insertInterCode(result, code);
         break;
     // NOT Exp
     case 11:
-
+        op1 = lableOperand();
+        op2 = lableOperand();
+        op3 = constOperand(0);
+        code = assignCode(exp->place, op3);
+        // init place = 0;
+        result = interCodes(code);
+        // translate cond
+        insertInterCodes(result, translate_Cond(exp, op1, op2));
+        // if true place = 1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        op3 = constOperand(1);
+        code = assignCode(exp->place, op3);
+        insertInterCode(result, code);
+        // if false jump to l2
+        code = sinopCode(op2, LABLECODE);
+        insertInterCode(result, code);
         break;
     // ID LP Args RP
     case 12:
@@ -67,35 +163,141 @@ InterCodes translate_Exp(SyntaxTree exp, int syntaxNum) {
     // Exp DOT ID
     case 15:
         // TODO
-        exit(1);
+        assert(acceptStruct == 0);
         break;
     // ID
     case 16:
-        op->kind = VARIABLE;
-        op->u.name = malloc(sizeof(strlen(exp->sons->code)));
-        strcpy(op->u.name, exp->sons->code);
-        result->code.kind = ASSIGNCODE;
-        result->code.u.assign.left = exp->place;
-        result->code.u.assign.right = op;
+        op1 = varOperand(exp->sons->code);
+        code = assignCode(exp->place, op1);
+        result = interCodes(code);
         break;
     // INT
     case 17:
-        op->kind = CONSTANT;
-        op->u.value = atoi(exp->sons->code);
-        result->code.kind = ASSIGNCODE;
-        result->code.u.assign.left = exp->place;
-        result->code.u.assign.right = op;
+        op1 = constOperand(atoi(exp->sons->code));
+        code = assignCode(exp->place, op1);
+        result = interCodes(code);
         break;
     // FLOAT
     case 18:
-        assert(0);
+        assert(acceptFloat == 0);
     default:
         break;
     }
     return result;
 }
 
+InterCodes translate_CompSt(SyntaxTree compSt) {
+    return NULL;
+}
+
+InterCodes translate_Stmt(SyntaxTree stmt) {
+    InterCode code;
+    InterCodes result;
+    Operand op1, op2, op3;
+    SyntaxTree exp, stmt1, stmt2;
+    switch (stmt->syntaxNum)
+    {
+    // Exp SEMI
+    case 1:
+        exp = stmt->sons;
+        result = translate_Exp(exp);
+        break;
+    // CompSt
+    case 2:
+        result = translate_CompSt(stmt->sons);
+        break;
+    // RETURN Exp SEMI
+    case 3:
+        exp = stmt->sons->next;
+        result = translate_Exp(exp);
+        code = sinopCode(exp->place, RETURNCODE);
+        insertInterCode(result, code);
+        break;
+    // IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
+    case 4:
+        exp = stmt->sons->next->next;
+        stmt1 = exp->next->next;
+        op1 = lableOperand();
+        op2 = lableOperand();
+        // code1
+        result = translate_Cond(exp, op1, op2);
+        // LABLE op1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        // code2
+        insertInterCodes(result, translate_Stmt(stmt1));
+        // LABLE op2
+        code = sinopCode(op2, LABLECODE);
+        insertInterCode(result, code);
+        break;
+    // IF LP Exp RP Stmt ELSE Stmt
+    case 5:
+        exp = stmt->sons->next->next;
+        stmt1 = exp->next->next;
+        stmt2 = stmt1->next->next;
+        op1 = lableOperand();
+        op2 = lableOperand();
+        op3 = lableOperand();
+        // code1
+        result = translate_Cond(exp, op1, op2);
+        // LABLE op1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        // code2
+        insertInterCodes(result, translate_Stmt(stmt1));
+        // GOTO op3
+        code = sinopCode(op3, GOTOCODE);
+        insertInterCode(result, code);
+        // LABLE op2
+        code = sinopCode(op2, LABLECODE);
+        insertInterCode(result, code);
+        // code3
+        insertInterCodes(result, translate_Stmt(stmt2));
+        // LABLE op3
+        code = sinopCode(op3, LABLECODE);
+        insertInterCode(result, code);
+        break;
+    // WHILE LP Exp RP Stmt
+    case 6:
+        op1 = lableOperand();
+        op2 = lableOperand();
+        op3 = lableOperand();
+        exp = stmt->sons->next->next;
+        stmt1 = exp->next->next;
+        // LABLE op1
+        code = sinopCode(op1, LABLECODE);
+        result = interCodes(code);
+        // code1
+        insertInterCodes(result, translate_Cond(exp, op2, op3));
+        // LABLE op2
+        code = sinopCode(op2, LABLECODE);
+        insertInterCode(result, code);
+        // code2
+        insertInterCodes(result, translate_Stmt(stmt1));
+        // GOTO op1
+        code = sinopCode(op1, GOTOCODE);
+        insertInterCode(result, code);
+        // LABLE op3
+        code = sinopCode(op3, LABLE);
+        insertInterCode(result, code);
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
+
+
+
+
+
+
+
+
 void translateCode(SyntaxTree t) {
+    topTable = symTable[0];
+
     switch (t->mytype)
     {
     case MProgram:
@@ -256,29 +458,7 @@ void translateCode(SyntaxTree t) {
         // }
         break;
     case MStmt:
-        switch (t->syntaxNum)
-        {
-        // Exp SEMI
-        case 1:
-            break;
-        // CompSt
-        case 2:
-            break;
-        // RETURN Exp SEMI
-        case 3:
-            break;
-        // IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
-        case 4:
-            break;
-        // IF LP Exp RP Stmt ELSE Stmt
-        case 5:
-            break;
-        // WHILE LP Exp RP Stmt
-        case 6:
-            break;
-        default:
-            break;
-        }
+        translate_Stmt(t);
         break;
     // defList 中会包含很多的 NULL Type （作为headSymbol）
     case MDefList:
@@ -331,7 +511,7 @@ void translateCode(SyntaxTree t) {
         }
         break;
     case MExp:
-        translate_Exp(t, t->syntaxNum);
+        translate_Exp(t);
         break;
     case MArgs:
         switch (t->syntaxNum)
@@ -349,4 +529,9 @@ void translateCode(SyntaxTree t) {
     default:
         break;
     }
+}
+
+void genInterCode() {
+    translateCode(tree);
+    displayInterCodes(tree->intercodes);
 }

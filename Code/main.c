@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "semantics.h"
+#include "test.h"
 void yyrestart(FILE* f);
 int yyparse();
 void initTree();
@@ -22,5 +22,11 @@ int main(int argc, char** argv)  {
     yyparse(); 
     // displayTree();
     semanticsAnalysis();
+    genInterCode();
     return 0;
 }
+
+// test
+// int main() {
+//   testInterCodes();
+// }
