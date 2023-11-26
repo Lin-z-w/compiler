@@ -3,6 +3,12 @@
 const int acceptFloat = 0, acceptStruct = 0;
 SymbolTable topTable;
 
+InterCodes translate_Exp(SyntaxTree exp);
+InterCodes translate_Cond(SyntaxTree t, Operand lable1, Operand lable2);
+InterCodes translate_Args(SyntaxTree args);
+InterCodes translate_CompSt(SyntaxTree compSt);
+InterCodes translate_Stmt(SyntaxTree stmt);
+
 InterCodes translate_Cond(SyntaxTree t, Operand lable1, Operand lable2) {
     switch (t->syntaxNum)
     {
