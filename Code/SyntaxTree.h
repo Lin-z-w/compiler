@@ -70,6 +70,7 @@ typedef struct inode
     struct inode *initExp;
     InterCodes intercodes;
     Operand place;
+    ArgList argList;
 
     // Inherited attributes
 } Node;

@@ -49,6 +49,14 @@ InterCode assignCode(Operand l, Operand r) {
     return ic;
 }
 
+InterCode callCode(Operand ret, Operand func) {
+    InterCode ic;
+    ic.kind = CALLCODE;
+    ic.u.call.ret = ret;
+    ic.u.call.func = func;
+    return ic;
+}
+
 InterCode binopCode(Operand reslut, Operand op1, Operand op2, int operator) {
     InterCode ic;
     ic.kind = operator;
@@ -65,57 +73,18 @@ InterCode sinopCode(Operand op, int kind) {
     return ic;
 }
 
-// InterCode lableCode(Operand lable) {
-//     InterCode ic;
-//     ic.kind = LABLECODE;
-//     ic.u.lable.lable = lable;
-//     return ic;
-// }
-
-// InterCode functionCode(Operand funcname) {
-//     InterCode ic;
-//     ic.kind = FUNCTIONCODE;
-//     ic.u.function.funcname = funcname;
-//     return ic;
-// }
-
-// InterCode gotoCode(Operand lable) {
-//     InterCode ic;
-//     ic.kind = GOTOCODE;
-//     ic.u.gotoCode.lable = lable;
-//     return ic;
-// }
-
-// InterCode ifCode() {
-
-// }
-
-// InterCode returnCode(Operand ret) {
-//     InterCode ic;
-//     ic.kind = RETURNCODE;
-//     ic.u.returnCode.ret = ret;
-//     return ic;
-// }
-
-// InterCode argCode(Operand op) {
-//     InterCode ic;
-//     ic.kind = ARGCODE;
-//     ic.u.arg.op = op;
-//     return ic;
-// }
-
-// InterCode paramCode(Operand lable) {
-//     InterCode ic;
-//     ic.kind = PARAMCODE;
-//     ic.u.param.op = lable;
-//     return ic;
-// }
-
 InterCodes interCodes(InterCode ic) {
     InterCodes ics = malloc(sizeof(struct InterCodes_));
     ics->code = ic;
     ics->next = NULL;
     ics->prev = NULL;
+}
+
+ArgList argList(Operand arg) {
+    ArgList al = malloc(sizeof(struct ArgList_));
+    al->arg = arg;
+    al->next = NULL;
+    return al;
 }
 
 void insertInterCodes(InterCodes ics, InterCodes next) {
@@ -136,6 +105,14 @@ void insertInterCode(InterCodes ics, InterCode ic) {
     }
     ics->next = interCodes(ic);
     ics->next->prev = ics;
+}
+
+void insertArgList(ArgList argList1, ArgList argList2) {
+    assert(argList1 != NULL);
+    while (argList1->next != NULL) {
+        argList1 = argList1->next;
+    }
+    argList1->next = argList2;
 }
 
 void displayOperand(Operand op) {
