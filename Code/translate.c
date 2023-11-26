@@ -1,6 +1,6 @@
 #include "translate.h"
 
-const int acceptFloat = 0, acceptStruct = 0;
+const int acceptFloat = 0, acceptStruct = 0, acceptGlobleVar = 0;
 SymbolTable topTable;
 
 InterCodes translate_Exp(SyntaxTree exp);
@@ -326,6 +326,14 @@ InterCodes translate_Exp(SyntaxTree exp) {
 }
 
 InterCodes translate_CompSt(SyntaxTree compSt) {
+    switch (compSt->syntaxNum)
+    {
+    // LC DefList StmtList RC
+    case 1:
+        break;
+    default:
+        break;
+    }
     return NULL;
 }
 
@@ -434,6 +442,9 @@ InterCodes translate_Stmt(SyntaxTree stmt) {
 
 
 
+
+
+
 void translateCode(SyntaxTree t) {
     topTable = symTable[0];
 
@@ -441,39 +452,52 @@ void translateCode(SyntaxTree t) {
     {
     case MProgram:
         // ExtDefList
+        translateCode(t->sons);
+        t->intercodes = t->sons->intercodes;
         break;
     case MExtDefList:
         // ExtDef ExtDefList
+        translateCode(t->sons);
+        translateCode(t->sons->next);
+        t->intercodes = t->sons->intercodes;
+        insertInterCodes(t->intercodes, t->sons->next->intercodes);
         break;
     case MExtDef:
         switch (t->syntaxNum)
         {
         // Specifier ExtDecList SEMI
-        // ExtDecList 中全部未赋值
         case 1:
+            assert(acceptGlobleVar == 0);
             break;
         // Specifier SEMI
         case 2:
+            translateCode(t->sons);
+            t->intercodes = t->sons->intercodes;
             break;
         // Specifier FunDec CompSt
         case 3:
+            translateCode(t->sons->next);
+            translateCode(t->sons->next->next);
+            t->intercodes = t->sons->next->intercodes;
+            insertInterCodes(t->intercodes, t->sons->next->next->intercodes);
             break;
         default:
             break;
         }
         break;
     case MExtDecList:
-        switch (t->syntaxNum)
-        {
-        // VarDec
-        case 1:
-            break;
-        // VarDec COMMA ExtDecList
-        case 2:
-            break;
-        default:
-            break;
-        }
+        assert(acceptGlobleVar == 0);
+        // switch (t->syntaxNum)
+        // {
+        // // VarDec
+        // case 1:
+        //     break;
+        // // VarDec COMMA ExtDecList
+        // case 2:
+        //     break;
+        // default:
+        //     break;
+        // }
         break;
     case MSpecifier:
         switch (t->syntaxNum)
@@ -574,14 +598,7 @@ void translateCode(SyntaxTree t) {
         }
         break;
     case MCompSt:
-        switch (t->syntaxNum)
-        {
-        // LC DefList StmtList RC
-        case 1:
-            break;
-        default:
-            break;
-        }
+        translate_CompSt(t->sons);
         break;
     case MStmtList:
         // switch (t->syntaxNum)
