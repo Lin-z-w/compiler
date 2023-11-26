@@ -60,6 +60,7 @@ Operand constOperand(int value);
 Operand tmpOperand();
 Operand lableOperand();
 InterCode assignCode(Operand l, Operand r);
+InterCode ifCode(Operand op1, Operand op2, Operand lable, int kind);
 InterCode callCode(Operand ret, Operand func);
 InterCode binopCode(Operand reslut, Operand op1, Operand op2, int operator);
 InterCode sinopCode(Operand op, int kind);

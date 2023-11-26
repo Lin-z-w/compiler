@@ -4,27 +4,95 @@ const int acceptFloat = 0, acceptStruct = 0;
 SymbolTable topTable;
 
 InterCodes translate_Exp(SyntaxTree exp);
-InterCodes translate_Cond(SyntaxTree t, Operand lable1, Operand lable2);
+InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF);
 InterCodes translate_Args(SyntaxTree args);
 InterCodes translate_CompSt(SyntaxTree compSt);
 InterCodes translate_Stmt(SyntaxTree stmt);
 
-InterCodes translate_Cond(SyntaxTree t, Operand lable1, Operand lable2) {
-    switch (t->syntaxNum)
+InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
+    SyntaxTree exp1, exp2;
+    InterCodes result;
+    InterCode code;
+    Operand op1, op2;
+    int kind;
+    char* relop;
+    switch (exp->syntaxNum)
     {
     // NOT Exp
     case 11:
+        exp1 = exp->sons->next;
+        result = translate_Cond(exp1, lableF, lableT);
         break;
     // Exp AND Exp 
     case 2:
+        exp1 = exp->sons;
+        exp2 = exp1->next->next;
+        op1 = lableOperand();
+        // code1
+        result = translate_Cond(exp1, op1, lableF);
+        // LABLE op1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        // code2
+        insertInterCodes(result, translate_Cond(exp2, lableT, lableF));
         break;
     // Exp OR Exp
     case 3:
+        exp1 = exp->sons;
+        exp2 = exp1->next->next;
+        op1 = lableOperand();
+        // code1
+        result = translate_Cond(exp1, lableT, op1);
+        // LABLE op1
+        code = sinopCode(op1, LABLECODE);
+        insertInterCode(result, code);
+        // code2
+        insertInterCodes(result, translate_Cond(exp2, lableT, lableF));
         break;
     // Exp RELOP Exp
     case 4:
+        exp1 = exp->sons;
+        relop = exp1->next->code;
+        exp2 = exp1->next->next;
+        // code1
+        result = translate_Exp(exp1);
+        // code2
+        insertInterCodes(result, translate_Exp(exp2));
+        if (strcmp(relop, ">") == 0) {
+            kind = IFGCODE;
+        }
+        else if (strcmp(relop, ">=") == 0) {
+            kind = IFGECODE;
+        }
+        else if (strcmp(relop, "<") == 0) {
+            kind = IFLCODE;
+        }
+        else if (strcmp(relop, "<=") == 0) {
+            kind = IFLECODE;
+        }
+        else if (strcmp(relop, "==") == 0) {
+            kind = IFECODE;
+        }
+        else if (strcmp(relop, "!=") == 0) {
+            kind = IFNECODE;
+        }
+        // code3
+        code = ifCode(exp1->place, exp2->place, lableT, kind);
+        insertInterCode(result, code);
+        // GOTO false lable
+        code = sinopCode(lableF, GOTOCODE);
+        insertInterCode(result, code);
         break;
     default:
+        // code1
+        result = translate_Exp(exp);
+        // code2
+        op1 = constOperand(0);
+        code = ifCode(exp->place, op1, lableT, IFNECODE);
+        insertInterCode(result, code);
+        // GOTO false lable
+        code = sinopCode(lableF, GOTOCODE);
+        insertInterCode(result, code);
         break;
     }
     return NULL;

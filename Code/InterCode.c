@@ -49,6 +49,15 @@ InterCode assignCode(Operand l, Operand r) {
     return ic;
 }
 
+InterCode ifCode(Operand op1, Operand op2, Operand lable, int kind) {
+    InterCode ic;
+    ic.kind = kind;
+    ic.u.ifcode.op1 = op1;
+    ic.u.ifcode.op2 = op2;
+    ic.u.ifcode.lable = lable;
+    return ic;
+}
+
 InterCode callCode(Operand ret, Operand func) {
     InterCode ic;
     ic.kind = CALLCODE;
