@@ -1,9 +1,13 @@
+#include <stddef.h>
+#include <stdlib.h>
+#include <assert.h>
+
 typedef struct Operand_* Operand;
 typedef struct InterCode_ InterCode;
 typedef struct InterCodes_* InterCodes;
 
 struct Operand_ {
-    enum { VARIABLE, CONSTANT, ADDRESS} kind;
+    enum { VARIABLE, CONSTANT, ADDRESS, TEMP} kind;
     union {
         char* name;
         int value;
@@ -13,7 +17,8 @@ struct Operand_ {
 
 struct InterCode_
 {
-    enum { LABLE, FUNCTION, ASSIGN, ADD, SUB, MUL, DIV, GOTO, IFE, IFNE, IFG, IFGE, IFL, IFLE, RETURN, DEC, ARG, CALL, PARAM, READ, WRITE } kind;
+    enum { LABLECODE, FUNCTIONCODE, ASSIGNCODE, ADDCODE, SUBCODE, MULCODE, DIVCODE, GOTOCODE, 
+        IFECODE, IFNECODE, IFGCODE, IFGECODE, IFLCODE, IFLECODE, RETURNCODE, DECCODE, ARGCODE, CALLCODE, PARAMCODE, READCODE, WRITECODE } kind;
     union {
         struct { Operand lineno; } lable;
         struct { Operand funcname; } function;
@@ -36,4 +41,4 @@ struct InterCodes_ {
     InterCodes prev, next; 
 };
 
-extern InterCodes intercodes;
+void insertInterCodes(InterCodes intercodes, InterCodes next);

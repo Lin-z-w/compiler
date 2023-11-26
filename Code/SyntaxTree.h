@@ -1,5 +1,3 @@
-#include <stddef.h>
-#include <stdlib.h>
 #include "SymbolTable.h"
 #include "InterCode.h"
 
@@ -71,6 +69,7 @@ typedef struct inode
     SymbolTable defList, decList, varList, args;
     struct inode *initExp;
     InterCodes intercodes;
+    Operand place;
 
     // Inherited attributes
 } Node;

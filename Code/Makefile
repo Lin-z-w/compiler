@@ -44,4 +44,4 @@ test:
 
 copy: 
 	make clean
-	cp -r ../Code /mnt/d/lab2/
+	cp -r ../Code /mnt/d/compiler/

@@ -21,6 +21,7 @@ void initNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum)
     tree[t].name = malloc(sizeof(char) * strlen(na)); strcpy(tree[t].name, na);
     tree[t].syntaxNum = synNum;
     tree[t].initExp = NULL;
+    tree[t].intercodes = NULL;
 }
 
 SyntaxTree creatNode(char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {
