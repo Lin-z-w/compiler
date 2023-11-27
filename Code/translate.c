@@ -8,6 +8,9 @@ InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF);
 InterCodes translate_Args(SyntaxTree args);
 InterCodes translate_CompSt(SyntaxTree compSt);
 InterCodes translate_Stmt(SyntaxTree stmt);
+InterCodes translate_StmtList(SyntaxTree stmtList);
+InterCodes translate_DefList(SyntaxTree defList);
+InterCodes translate_FunDec(SyntaxTree funDec);
 
 InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
     SyntaxTree exp1, exp2;
@@ -95,7 +98,7 @@ InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
         insertInterCode(result, code);
         break;
     }
-    return NULL;
+    return result;
 }
 
 InterCodes translate_Args(SyntaxTree args) {
@@ -325,16 +328,53 @@ InterCodes translate_Exp(SyntaxTree exp) {
     return result;
 }
 
-InterCodes translate_CompSt(SyntaxTree compSt) {
-    switch (compSt->syntaxNum)
+InterCodes translate_StmtList(SyntaxTree stmtList) {
+    InterCodes result;
+    switch (stmtList->syntaxNum)
     {
-    // LC DefList StmtList RC
+    // Stmt StmtList
     case 1:
+        break;
+    // empty
+    case 2:
         break;
     default:
         break;
     }
-    return NULL;
+    return result;
+}
+
+InterCodes translate_DefList(SyntaxTree defList) {
+    InterCodes result;
+    switch (defList->syntaxNum)
+    {
+    // Def DefList
+    case 1:
+        break;
+    // empty
+    case 2:
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
+InterCodes translate_CompSt(SyntaxTree compSt) {
+    SyntaxTree defList, stmtList;
+    InterCodes result;
+    switch (compSt->syntaxNum)
+    {
+    // LC DefList StmtList RC
+    case 1:
+        defList = compSt->sons->next;
+        stmtList = defList->next;
+        
+        break;
+    default:
+        break;
+    }
+    return result;
 }
 
 InterCodes translate_Stmt(SyntaxTree stmt) {
@@ -425,7 +465,7 @@ InterCodes translate_Stmt(SyntaxTree stmt) {
         code = sinopCode(op1, GOTOCODE);
         insertInterCode(result, code);
         // LABLE op3
-        code = sinopCode(op3, LABLE);
+        code = sinopCode(op3, LABLECODE);
         insertInterCode(result, code);
         break;
     default:
@@ -434,6 +474,40 @@ InterCodes translate_Stmt(SyntaxTree stmt) {
     return result;
 }
 
+InterCodes translate_FunDec(SyntaxTree funDec) {
+    InterCodes result;
+    InterCode code;
+    Operand op1;
+    SyntaxTree id;
+    SymbolTable varList;
+    switch (funDec->syntaxNum)
+    {
+    // ID LP VarList RP
+    case 1:
+        id = funDec->sons;
+        varList = funDec->sons->next->next->varList;
+        op1 = varOperand(id->code);
+        code = sinopCode(op1, FUNCTIONCODE);
+        result = interCodes(code);  
+        while (varList != NULL) {
+            op1 = varOperand(varList->name);
+            code = sinopCode(op1, PARAMCODE);
+            insertInterCode(result, code);
+            varList = varList->next;
+        }
+        break;
+    // ID LP RP
+    case 2:
+        id = funDec->sons;
+        op1 = varOperand(id->code);
+        code = sinopCode(op1, FUNCTIONCODE);
+        result = interCodes(code);
+        break;
+    default:
+        break;
+    }
+    return result;
+}
 
 
 
@@ -459,8 +533,13 @@ void translateCode(SyntaxTree t) {
         // ExtDef ExtDefList
         translateCode(t->sons);
         translateCode(t->sons->next);
-        t->intercodes = t->sons->intercodes;
-        insertInterCodes(t->intercodes, t->sons->next->intercodes);
+        if (t->sons->intercodes == NULL) {
+            t->intercodes = t->sons->next->intercodes;
+        }
+        else {
+            t->intercodes = t->sons->intercodes;
+            insertInterCodes(t->intercodes, t->sons->next->intercodes);
+        }
         break;
     case MExtDef:
         switch (t->syntaxNum)
@@ -471,8 +550,8 @@ void translateCode(SyntaxTree t) {
             break;
         // Specifier SEMI
         case 2:
-            translateCode(t->sons);
-            t->intercodes = t->sons->intercodes;
+            // translateCode(t->sons);
+            // t->intercodes = t->sons->intercodes;
             break;
         // Specifier FunDec CompSt
         case 3:
@@ -487,67 +566,16 @@ void translateCode(SyntaxTree t) {
         break;
     case MExtDecList:
         assert(acceptGlobleVar == 0);
-        // switch (t->syntaxNum)
-        // {
-        // // VarDec
-        // case 1:
-        //     break;
-        // // VarDec COMMA ExtDecList
-        // case 2:
-        //     break;
-        // default:
-        //     break;
-        // }
         break;
     case MSpecifier:
-        switch (t->syntaxNum)
-        {
-        // TYPE
-        case 1:
-            break;
-        // StructSpecifier
-        case 2:
-            break;
-        default:
-            break;
-        }
         break;
     case MStructSpecifier:
-        switch (t->syntaxNum)
-        {
-        // STRUCT OptTag LC DefList RC
-        case 1:
-            break;
-        // STRUCT Tag
-        case 2:
-            break;
-        default:
-            break;
-        }
         break; 
     case MOptTag:
-        switch (t->syntaxNum)
-        {
-        // ID
-        case 1:
-            break;
-        // empty
-        case 2:
-            break;
-        default:
-            break;
-        }
         break;  
     case MTag:
-        switch (t->syntaxNum)
-        {
-        // ID
-        case 1:
-            break;
-        default:
-            break;
-        }
         break;
+    // TODO
     case MVarDec:
         switch (t->syntaxNum)
         {
@@ -562,48 +590,26 @@ void translateCode(SyntaxTree t) {
         }
         break;
     case MFunDec:
-        switch (t->syntaxNum)
-        {
-        // ID LP VarList RP
-        case 1:
-            break;
-        // ID LP RP
-        case 2:
-            break;
-        default:
-            break;
-        }
+        t->intercodes = translate_FunDec(t);
         break;
     case MVarList:
-        switch (t->syntaxNum)
-        {
-        // ParamDec COMMA VarList
-        case 1:
-            break;
-        // ParamDec
-        case 2:
-            break;
-        default:
-            break;
-        }
         break;
     case MParamDec:
-        switch (t->syntaxNum)
-        {
-        // Specifier VarDec
-        case 1:
-            break;
-        default:
-            break;
-        }
         break;
     case MCompSt:
-        translate_CompSt(t->sons);
+        t->intercodes = translate_CompSt(t);
         break;
     case MStmtList:
+        t->intercodes = translate_StmtList(t);
+        break;
+    case MStmt:
+        t->intercodes = translate_Stmt(t);
+        break;
+    // defList 中会包含很多的 NULL Type （作为headSymbol）
+    case MDefList:
         // switch (t->syntaxNum)
         // {
-        // // Stmt StmtList
+        // // Def DefList
         // case 1:
         //     break;
         // // empty
@@ -612,23 +618,6 @@ void translateCode(SyntaxTree t) {
         // default:
         //     break;
         // }
-        break;
-    case MStmt:
-        translate_Stmt(t);
-        break;
-    // defList 中会包含很多的 NULL Type （作为headSymbol）
-    case MDefList:
-        switch (t->syntaxNum)
-        {
-        // Def DefList
-        case 1:
-            break;
-        // empty
-        case 2:
-            break;
-        default:
-            break;
-        }
         break; 
     case MDef:
         switch (t->syntaxNum)

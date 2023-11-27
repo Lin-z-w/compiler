@@ -23,6 +23,7 @@ void initNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum)
     tree[t].initExp = NULL;
     tree[t].intercodes = NULL;
     tree[t].argList = NULL;
+    tree[t].paramList = NULL;
 }
 
 SyntaxTree creatNode(char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {
