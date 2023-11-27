@@ -8,6 +8,7 @@ int tableTop = 0;
 
 void analysisSons(SyntaxTree sons);
 void analysis(SyntaxTree t);
+void insertSymTable(char* name, Type t, int location, enum SymbolKind k, SymbolTable args);
 
 void semanticsError(int type, int location, char* msg) {
     printf("Error type %d at Line %d: %s\n", type, location, msg);
@@ -15,6 +16,9 @@ void semanticsError(int type, int location, char* msg) {
 
 void initTable() {
     symTable[0] = headSymbol();
+    SymbolTable args = symbolTable("x", intType);
+    insertSymTable("read", intType, 0, FUNSYM, NULL);
+    insertSymTable("write", intType, 0, FUNSYM, args);
 }
 
 void increaseTableTop() {

@@ -138,8 +138,7 @@ InterCodes translate_Exp(SyntaxTree exp) {
     SyntaxTree exp1, exp2, id, args;
     Operand op1, op2, op3;
     ArgList arlst;
-    result->next = NULL;
-    result->prev = NULL;
+    // printf("%d\n", exp->syntaxNum);
 
     // init place
     exp->place = tmpOperand();
@@ -151,11 +150,11 @@ InterCodes translate_Exp(SyntaxTree exp) {
         exp1 = exp->sons;
         exp2 = exp->sons->next->next;
         // Exp1 must be ID
-        assert(exp1->mytype == MID);
+        assert(exp1->sons->mytype == MID);
         // translate exp2
         result = translate_Exp(exp2);
         // assign exp1
-        op1 = varOperand(exp1->code);
+        op1 = varOperand(exp1->sons->code);
         code = assignCode(op1, exp2->place);
         insertInterCode(result, code);
         // assign exp->place
@@ -329,30 +328,20 @@ InterCodes translate_Exp(SyntaxTree exp) {
 }
 
 InterCodes translate_StmtList(SyntaxTree stmtList) {
-    InterCodes result;
+    InterCodes result = NULL;
+    SyntaxTree stmt, stmtList1;
     switch (stmtList->syntaxNum)
     {
     // Stmt StmtList
     case 1:
+        stmt = stmtList->sons;
+        stmtList1 = stmt->next;
+        result = translate_Stmt(stmt);
+        insertInterCodes(result, translate_StmtList(stmtList1));
         break;
     // empty
     case 2:
-        break;
-    default:
-        break;
-    }
-    return result;
-}
-
-InterCodes translate_DefList(SyntaxTree defList) {
-    InterCodes result;
-    switch (defList->syntaxNum)
-    {
-    // Def DefList
-    case 1:
-        break;
-    // empty
-    case 2:
+        result = NULL;
         break;
     default:
         break;
@@ -361,15 +350,34 @@ InterCodes translate_DefList(SyntaxTree defList) {
 }
 
 InterCodes translate_CompSt(SyntaxTree compSt) {
-    SyntaxTree defList, stmtList;
-    InterCodes result;
+    SyntaxTree stmtList;
+    SymbolTable defList;
+    InterCodes result = NULL;
+    InterCode code;
+    Operand op;
     switch (compSt->syntaxNum)
     {
     // LC DefList StmtList RC
     case 1:
-        defList = compSt->sons->next;
-        stmtList = defList->next;
-        
+        defList = compSt->sons->defList;
+        stmtList = compSt->sons->next->next;
+        // gen init definition
+        while (defList != NULL) {
+            if (defList->hasInit) {
+                result = translate_Exp(defList->initExp);
+                op = varOperand(defList->name);
+                code = assignCode(op, defList->initExp->place);
+                insertInterCode(result, code);
+            }
+            defList = defList->next;
+        }
+        // translate stmtlist
+        if (result == NULL) {
+            result = translate_StmtList(stmtList);
+        }
+        else {
+            insertInterCodes(result, translate_StmtList(stmtList));
+        }
         break;
     default:
         break;
@@ -607,56 +615,45 @@ void translateCode(SyntaxTree t) {
         break;
     // defList 中会包含很多的 NULL Type （作为headSymbol）
     case MDefList:
+        break; 
+    case MDef:
         // switch (t->syntaxNum)
         // {
-        // // Def DefList
+        // // Specifier DecList SEMI
         // case 1:
         //     break;
-        // // empty
+        // default:
+        //     break;
+        // }
+        break;
+    case MDecList:
+        // switch (t->syntaxNum)
+        // {
+        // // Dec
+        // case 1:
+        //     break;
+        // // Dec COMMA DecList
         // case 2:
         //     break;
         // default:
         //     break;
         // }
-        break; 
-    case MDef:
-        switch (t->syntaxNum)
-        {
-        // Specifier DecList SEMI
-        case 1:
-            break;
-        default:
-            break;
-        }
-        break;
-    case MDecList:
-        switch (t->syntaxNum)
-        {
-        // Dec
-        case 1:
-            break;
-        // Dec COMMA DecList
-        case 2:
-            break;
-        default:
-            break;
-        }
         break;
     case MDec:  
-        switch (t->syntaxNum)
-        {
-        // VarDec
-        case 1:
-            break;
-        // VarDec ASSIGNOP Exp
-        case 2:
-            break;
-        default:
-            break;
-        }
+        // switch (t->syntaxNum)
+        // {
+        // // VarDec
+        // case 1:
+        //     break;
+        // // VarDec ASSIGNOP Exp
+        // case 2:
+        //     break;
+        // default:
+        //     break;
+        // }
         break;
     case MExp:
-        translate_Exp(t);
+        t->intercodes = translate_Exp(t);
         break;
     case MArgs:
         break;

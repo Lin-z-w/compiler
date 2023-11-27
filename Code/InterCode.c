@@ -103,7 +103,9 @@ void insertInterCodes(InterCodes ics, InterCodes next) {
         ics = ics->next;
     }
     ics->next = next;
-    next->prev = ics;
+    if (next != NULL) {
+        next->prev = ics;
+    }
 }
 
 void insertInterCode(InterCodes ics, InterCode ic) {
@@ -142,7 +144,7 @@ void displayOperand(Operand op) {
         break;
     case LABLE:
         // TODO
-        printf("lable%d", op->u.lableNo);
+        printf("label%d", op->u.lableNo);
         break;
     default:
         break;
@@ -155,12 +157,14 @@ void displayInterCodes(InterCodes ics) {
         switch (code.kind)
         {
         case LABLECODE:
-            // printf("LABLE lable%d :", code.u.lable.lable->u.lableNo);
-            printf("LABLE ");
-            displayOperand(ics->code.u.sinop.op);
+            printf("LABEL ");
+            displayOperand(code.u.sinop.op);
             printf(" :");
             break;
         case FUNCTIONCODE:
+            printf("FUNCTION ");
+            displayOperand(code.u.sinop.op);
+            printf(" :");
             break;
         case ASSIGNCODE:
             displayOperand(ics->code.u.assign.left);
@@ -175,38 +179,106 @@ void displayInterCodes(InterCodes ics) {
             displayOperand(ics->code.u.binop.op2);
             break;
         case SUBCODE:
+            displayOperand(ics->code.u.binop.result);
+            printf(" := ");
+            displayOperand(ics->code.u.binop.op1);
+            printf(" - ");
+            displayOperand(ics->code.u.binop.op2);
             break;
         case MULCODE:
+            displayOperand(ics->code.u.binop.result);
+            printf(" := ");
+            displayOperand(ics->code.u.binop.op1);
+            printf(" * ");
+            displayOperand(ics->code.u.binop.op2);
             break;
         case DIVCODE:
+            displayOperand(ics->code.u.binop.result);
+            printf(" := ");
+            displayOperand(ics->code.u.binop.op1);
+            printf(" / ");
+            displayOperand(ics->code.u.binop.op2);
             break;
         case GOTOCODE:
+            printf("GOTO ");
+            displayOperand(code.u.sinop.op);
             break; 
         case IFECODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" == ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case IFNECODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" != ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case IFGCODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" > ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case IFGECODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" >= ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case IFLCODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" < ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case IFLECODE:
+            printf("IF ");
+            displayOperand(code.u.ifcode.op1);
+            printf(" <= ");
+            displayOperand(code.u.ifcode.op2);
+            printf(" GOTO ");
+            displayOperand(code.u.ifcode.lable);
             break;
         case RETURNCODE:
+            printf("RETURN ");
+            displayOperand(code.u.sinop.op);
             break;
         case DECCODE:
+            // TODO
+            exit(5);
             break;
         case ARGCODE:
+            printf("ARG ");
+            displayOperand(code.u.sinop.op);
             break;
         case CALLCODE:
+            displayOperand(code.u.call.ret);
+            printf(" := CALL ");
+            displayOperand(code.u.call.func);
             break;
         case PARAMCODE:
+            printf("PARAM ");
+            displayOperand(code.u.sinop.op);
             break;
         case READCODE:
+            printf("READ ");
+            displayOperand(code.u.sinop.op);
             break;
         case WRITECODE:
+            printf("WRITE ");
+            displayOperand(code.u.sinop.op);
             break;
         default:
             break;
