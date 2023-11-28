@@ -1,4 +1,3 @@
 #include "semantics.h"
 
-void genInterCode();
-void translateCode(SyntaxTree t);
+void genInterCode(FILE* f);

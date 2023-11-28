@@ -328,12 +328,14 @@ void analysis(SyntaxTree t) {
         // ParamDec COMMA VarList
         case 1:
             t->varList = symbolTable(sons->code, sons->type);
+            assert(!isArray(sons->type));
             t->varList->location = sons->location;
             t->varList->next = sons->next->next->varList;
             break;
         // ParamDec
         case 2:
             t->varList = symbolTable(sons->code, sons->type);
+            assert(!isArray(sons->type));
             t->varList->location = sons->location;
             break;
         default:
@@ -412,6 +414,7 @@ void analysis(SyntaxTree t) {
                     case ARRAY:
                         newType = defList->type;
                         // find the type of array elem
+                        assert(!isArray(newType->u.array.elem));
                         while (isArray(newType->u.array.elem)) {
                             newType = newType->u.array.elem;
                         }

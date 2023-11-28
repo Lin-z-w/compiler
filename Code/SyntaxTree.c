@@ -24,6 +24,7 @@ void initNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum)
     tree[t].intercodes = NULL;
     tree[t].argList = NULL;
     tree[t].paramList = NULL;
+    tree[t].address = NULL;
 }
 
 SyntaxTree creatNode(char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {

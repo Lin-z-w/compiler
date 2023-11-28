@@ -11,18 +11,21 @@ extern int yydebug;
 
 int main(int argc, char** argv)  { 
     if (argc <= 1) return 1; 
-    FILE* f = fopen(argv[1], "r"); 
-    if (!f) 
+    FILE* rf = fopen(argv[1], "r"); 
+    if (!rf) 
     { 
       perror(argv[1]); 
       return 1; 
     } 
     initTree();
-    yyrestart(f); 
+    yyrestart(rf); 
     yyparse(); 
     // displayTree();
     semanticsAnalysis();
-    genInterCode();
+    FILE* wf = fopen(argv[2], "w");
+    genInterCode(wf);
+    fclose(rf);
+    fclose(wf);
     return 0;
 }
 

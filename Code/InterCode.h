@@ -10,13 +10,13 @@ typedef struct InterCodes_* InterCodes;
 typedef struct ArgList_* ArgList;
 
 struct Operand_ {
-    enum { VARIABLE, CONSTANT, ADDRESS, TEMP, LABLE} kind;
+    enum { VARIABLE, CONSTANT, ADDRESS, TEMP, LABLE, CONTENT, SPACE} kind;
     union {
         char* name;
         int value;
         int lableNo;
         int var_no;
-        int address;
+        int space;
     } u;
 };
 
@@ -56,10 +56,14 @@ struct ArgList_
 
 // construct func
 Operand varOperand(char *name);
+Operand addressOperand(char* name);
+Operand contentOperand(int varNo);
 Operand constOperand(int value);
+Operand spaceOperand(int space);
 Operand tmpOperand();
 Operand lableOperand();
 InterCode assignCode(Operand l, Operand r);
+InterCode decCode(Operand op, Operand size);
 InterCode ifCode(Operand op1, Operand op2, Operand lable, int kind);
 InterCode callCode(Operand ret, Operand func);
 InterCode binopCode(Operand reslut, Operand op1, Operand op2, int operator);
@@ -73,4 +77,4 @@ void insertInterCode(InterCodes ics, InterCode ic);
 void insertArgList(ArgList argList1, ArgList argList2);
 
 // dispaly
-void displayInterCodes(InterCodes ics);
+void displayInterCodes(InterCodes ics, FILE* f);

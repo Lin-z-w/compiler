@@ -36,6 +36,7 @@ struct SymbolTable_
 {
     int location;
     int hasInit;
+    int size;
     char* name; // 符号名称 e.g. 变量名、函数名
     Type type; 
     Type specifier;

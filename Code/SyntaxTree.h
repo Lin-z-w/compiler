@@ -64,12 +64,14 @@ typedef struct inode
     // info get in semantics
     // Intergrated attributes
     int canBeLeftVal;
+    int space;
+    int size;
     char* code;
     Type type;
     SymbolTable defList, decList, varList, args;
     struct inode *initExp;
     InterCodes intercodes;
-    Operand place;
+    Operand place, address;
     ArgList argList, paramList;
 
     // Inherited attributes

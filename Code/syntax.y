@@ -22,10 +22,9 @@
 %left OR
 %left AND
 %left RELOP
-%nonassoc LOWER_THAN_MINUS
-%left PLUS 
+%left PLUS MINUS
 %left STAR DIV
-%right NOT MINUS
+%right NOT HIGHMINUS
 %left LB RB LP RP DOT
 
 %%
@@ -102,11 +101,11 @@ Exp : Exp ASSIGNOP Exp { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 1); s
     | Exp OR Exp  { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 3); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
     | Exp RELOP Exp { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 4); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
     | Exp PLUS Exp  { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 5); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
-    | Exp MINUS Exp %prec LOWER_THAN_MINUS { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 6); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
+    | Exp MINUS Exp { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 6); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
     | Exp STAR Exp  { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 7); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
     | Exp DIV Exp  { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 8); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
     | LP Exp RP { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 9); setSons($$, $1); setSons($$, $2); setSons($$, $3); }
-    | MINUS Exp { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 10); setSons($$, $1); setSons($$, $2); }
+    | MINUS Exp %prec HIGHMINUS { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 10); setSons($$, $1); setSons($$, $2); }
     | NOT Exp { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 11); setSons($$, $1); setSons($$, $2); }
     | ID LP Args RP { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 12); setSons($$, $1); setSons($$, $2); setSons($$, $3); setSons($$, $4); }
     | ID LP RP { $$ = creatNode("Exp", MExp, @$.first_line, "Exp", 13); setSons($$, $1); setSons($$, $2); setSons($$, $3); }

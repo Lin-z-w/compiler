@@ -34,13 +34,13 @@ syntax-c: $(YFILE)
 # 定义的一些伪目标
 .PHONY: clean test copy
 clean:
-	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output
+	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output out.ir
 	rm -f $(OBJS) $(OBJS:.o=.d)
 	rm -f $(LFC) $(YFC) $(YFC:.c=.h)
-	rm -f *~
+	rm -f *~ 
 
 test:
-	./parser ../Test/test1.cmm
+	./parser ../Test/test1.cmm out.ir
 
 copy: 
 	make clean
