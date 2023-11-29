@@ -1,7 +1,8 @@
 #include "translate.h"
 
 const int acceptFloat = 0, acceptStruct = 0, acceptGlobleVar = 0;
-SymbolTable topTable, aliasTable;
+SymbolTable topTable;
+AliasTable alTable;
 
 InterCodes translate_Exp(SyntaxTree exp);
 InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF);
@@ -11,6 +12,37 @@ InterCodes translate_Stmt(SyntaxTree stmt);
 InterCodes translate_StmtList(SyntaxTree stmtList);
 InterCodes translate_DefList(SyntaxTree defList);
 InterCodes translate_FunDec(SyntaxTree funDec);
+
+AliasTable aliasTable(char* name, char* alias) {
+    AliasTable newTable = malloc(sizeof(struct AliasTable_));
+    newTable->alias.name = malloc(sizeof(name));
+    strcpy(newTable->alias.name, name);
+    newTable->alias.alias = malloc(sizeof(alias));
+    strcpy(newTable->alias.alias, alias);
+    newTable->next = NULL;
+    return newTable;
+}
+
+char* findAlias(char* name) {
+    AliasTable tmp = alTable;
+    while (tmp != NULL)
+    {
+        if (strcmp(tmp->alias.name, name) == 0) {
+            return tmp->alias.alias;
+        }
+        tmp = tmp->next;
+    }
+    return name;
+}
+
+void insertAliasTable(AliasTable next) {
+    AliasTable tmp = alTable;
+    while (tmp->next != NULL)
+    {
+        tmp = tmp->next;
+    }
+    tmp->next = next; 
+}
 
 InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
     SyntaxTree exp1, exp2;
@@ -138,6 +170,8 @@ InterCodes translate_Exp(SyntaxTree exp) {
     SyntaxTree exp1, exp2, id, args;
     Operand op1, op2, op3;
     ArgList arlst;
+    AliasTable newTable, targetTable;
+    char* realname1, *realname2;
     // printf("%d\n", exp->syntaxNum);
 
     // init place
@@ -154,14 +188,19 @@ InterCodes translate_Exp(SyntaxTree exp) {
         if (exp1->sons->mytype == MID) {
             // assign exp1
             if (isArray(exp1->type)) {
-                op1 = varOperand(exp1->sons->code);
-                op2 = addressOperand(exp2->sons->code);
-                code = assignCode(op1, op2);
+                realname1 = findAlias(exp1->sons->code);
+                op1 = varOperand(realname1);
+                // op2 = addressOperand(exp2->sons->code);
+                realname2 = findAlias(exp2->sons->code);
+                newTable = aliasTable(realname1, realname2);
+                insertAliasTable(newTable);
+                code = assignCode(op1, op1);
                 result = interCodes(code);
             }
             else {
                 result = translate_Exp(exp2);
-                op1 = varOperand(exp1->sons->code);
+                realname1 = findAlias(exp1->sons->code);
+                op1 = varOperand(realname1);
                 code = assignCode(op1, exp2->place);
                 insertInterCode(result, code);
                 // assign exp->place
@@ -328,7 +367,8 @@ InterCodes translate_Exp(SyntaxTree exp) {
         id = exp1->sons;
         // t1 = &exp1
         op1 = tmpOperand();
-        op2 = addressOperand(id->code);
+        realname1 = findAlias(id->code);
+        op2 = addressOperand(realname1);
         code = assignCode(op1, op2);
         result = interCodes(code);
         // get j
@@ -354,7 +394,8 @@ InterCodes translate_Exp(SyntaxTree exp) {
         break;
     // ID
     case 16:
-        op1 = varOperand(exp->sons->code);
+        realname1 = findAlias(exp->sons->code);
+        op1 = varOperand(realname1);
         code = assignCode(exp->place, op1);
         result = interCodes(code);
         break;
@@ -729,7 +770,7 @@ void translateCode(SyntaxTree t) {
 }
 
 void genInterCode(FILE* f) {
+    alTable = aliasTable("", "");
     translateCode(tree);
-    aliasTable = headSymbol();
     displayInterCodes(tree->intercodes, f);
 }
