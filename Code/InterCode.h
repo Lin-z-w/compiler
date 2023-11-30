@@ -77,4 +77,4 @@ void insertInterCode(InterCodes ics, InterCode ic);
 void insertArgList(ArgList argList1, ArgList argList2);
 
 // dispaly
-void displayInterCodes(InterCodes ics, FILE* f);
+void displayInterCodes(InterCodes ics);

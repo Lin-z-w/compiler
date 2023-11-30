@@ -22,10 +22,10 @@ int main(int argc, char** argv)  {
     yyparse(); 
     // displayTree();
     semanticsAnalysis();
-    FILE* wf = fopen(argv[2], "w");
-    genInterCode(wf);
+    // FILE* wf = fopen(argv[2], "w");
+    freopen(argv[2], "w", stdout);
+    genInterCode();
     fclose(rf);
-    fclose(wf);
     return 0;
 }
 

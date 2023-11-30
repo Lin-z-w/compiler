@@ -21,14 +21,15 @@ ParamTable paramTable(char* name) {
 }
 
 int isParam(char* name) {
+    ParamTable tmp = prTable;
     if (prTable == NULL) {
         return 0;
     }
-    while (prTable != NULL) {
-        if (strcmp(name, prTable->name) == 0) {
+    while (tmp != NULL) {
+        if (strcmp(name, tmp->name) == 0) {
             return 1;
         }
-        prTable = prTable->next;
+        tmp = tmp->next;
     }
     return 0;
 }
@@ -197,6 +198,7 @@ InterCodes translate_Args(SyntaxTree args) {
         // code1
         result = translate_Exp(exp);
         if (isStruct(exp->type)) {
+            assert(exp->address != NULL);
             args->argList = argList(exp->address);
         }
         else {
@@ -483,6 +485,7 @@ InterCodes translate_Exp(SyntaxTree exp) {
             op1 = tmpOperand();
             if (exp1->sons->mytype == MID) {
                 if (isParam(exp1->sons->code)) {
+                    // printf("SB\n");
                     op2 = varOperand(exp1->sons->code);
                 }
                 else {
@@ -522,6 +525,7 @@ InterCodes translate_Exp(SyntaxTree exp) {
     case 16:
         realname1 = findAlias(exp->sons->code);
         op1 = varOperand(realname1);
+        exp->address = addressOperand(realname1);
         code = assignCode(exp->place, op1);
         result = interCodes(code);
         break;
@@ -915,8 +919,8 @@ void translateCode(SyntaxTree t) {
     }
 }
 
-void genInterCode(FILE* f) {
+void genInterCode() {
     alTable = aliasTable("", "");
     translateCode(tree);
-    displayInterCodes(tree->intercodes, f);
+    displayInterCodes(tree->intercodes);
 }

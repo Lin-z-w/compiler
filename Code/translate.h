@@ -22,4 +22,4 @@ struct ParamTable_
 };
 
 
-void genInterCode(FILE* f);
+void genInterCode();
