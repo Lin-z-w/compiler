@@ -180,3 +180,29 @@ int isTBDorTBDArray(Type t) {
         return 0;
     }
 }
+
+int sizeofType(Type t) {
+    if (t == NULL) return 0;
+    int result = 0;
+    FieldList fl;
+    switch (t->kind)
+    {
+    case BASIC:
+        result = 4;
+        break;
+    case ARRAY:
+        result = t->u.array.size * sizeofType(t->u.array.elem);
+        break;
+    case STRUCTURE:
+        fl = t->u.structure;
+        while (fl != NULL)
+        {
+            result += sizeofType(fl->type);
+            fl = fl->tail;
+        }
+        break;
+    default:
+        break;
+    }
+    return result;
+}

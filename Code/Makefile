@@ -45,3 +45,6 @@ test:
 copy: 
 	make clean
 	cp -r ../Code /mnt/d/compiler/
+
+debug:
+	gdb --args ./parser ../Test/test1.cmm

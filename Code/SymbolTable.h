@@ -73,4 +73,6 @@ int isTBDorTBDArray(Type t);
 int typeEqual(Type t1, Type t2);
 int dimensionEqual(Type t1, Type t2);
 
+int sizeofType(Type t);
+
 extern Type intType, floatType, tbdType;

@@ -126,9 +126,9 @@ void insertInterCodes(InterCodes ics, InterCodes next) {
         ics = ics->next;
     }
     ics->next = next;
-    if (next != NULL) {
-        next->prev = ics;
-    }
+    // if (next != NULL) {
+    //     next->prev = ics;
+    // }
 }
 
 void insertInterCode(InterCodes ics, InterCode ic) {
@@ -283,7 +283,6 @@ void displayInterCodes(InterCodes ics, FILE* f) {
             displayOperand(code.u.sinop.op, f);
             break;
         case DECCODE:
-            // TODO
             fprintf(f, "DEC ");
             displayOperand(code.u.dec.op, f);
             fprintf(f, " ");

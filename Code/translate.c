@@ -3,6 +3,7 @@
 const int acceptFloat = 0, acceptStruct = 0, acceptGlobleVar = 0;
 SymbolTable topTable;
 AliasTable alTable;
+ParamTable prTable = NULL;
 
 InterCodes translate_Exp(SyntaxTree exp);
 InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF);
@@ -10,8 +11,41 @@ InterCodes translate_Args(SyntaxTree args);
 InterCodes translate_CompSt(SyntaxTree compSt);
 InterCodes translate_Stmt(SyntaxTree stmt);
 InterCodes translate_StmtList(SyntaxTree stmtList);
-InterCodes translate_DefList(SyntaxTree defList);
 InterCodes translate_FunDec(SyntaxTree funDec);
+
+ParamTable paramTable(char* name) {
+    ParamTable newTable = malloc(sizeof(struct ParamTable_));
+    newTable->name = malloc(sizeof(name));
+    strcpy(newTable->name, name);
+    return newTable;
+}
+
+int isParam(char* name) {
+    if (prTable == NULL) {
+        return 0;
+    }
+    while (prTable != NULL) {
+        if (strcmp(name, prTable->name) == 0) {
+            return 1;
+        }
+        prTable = prTable->next;
+    }
+    return 0;
+}
+
+void insertParamTable(char *name) {
+    ParamTable tmp = prTable;
+    if (prTable == NULL) {
+        prTable = paramTable(name);
+    } 
+    else {
+        while (tmp->next != NULL)
+        {
+            tmp = tmp->next;
+        }
+        tmp->next = paramTable(name);
+    }
+}
 
 AliasTable aliasTable(char* name, char* alias) {
     AliasTable newTable = malloc(sizeof(struct AliasTable_));
@@ -46,7 +80,7 @@ void insertAliasTable(AliasTable next) {
 
 InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
     SyntaxTree exp1, exp2;
-    InterCodes result;
+    InterCodes result = NULL;
     InterCode code;
     Operand op1, op2;
     int kind;
@@ -135,7 +169,8 @@ InterCodes translate_Cond(SyntaxTree exp, Operand lableT, Operand lableF) {
 
 InterCodes translate_Args(SyntaxTree args) {
     SyntaxTree exp, args1;
-    InterCodes result;
+    InterCodes result = NULL;
+    Operand op;
     ArgList arlst;
     switch (args->syntaxNum)
     {
@@ -145,7 +180,12 @@ InterCodes translate_Args(SyntaxTree args) {
         args1 = exp->next->next;
         // code1
         result = translate_Exp(exp);
-        args->argList = argList(exp->place);
+        if (isStruct(exp->type)) {
+            args->argList = argList(exp->address);
+        }
+        else {
+            args->argList = argList(exp->place);
+        }
         // code2
         insertInterCodes(result, translate_Args(args1));
         insertArgList(args1->argList, args->argList);
@@ -156,7 +196,12 @@ InterCodes translate_Args(SyntaxTree args) {
         exp = args->sons;
         // code1
         result = translate_Exp(exp);
-        args->argList = argList(exp->place);
+        if (isStruct(exp->type)) {
+            args->argList = argList(exp->address);
+        }
+        else {
+            args->argList = argList(exp->place);
+        }
         break;
     default:
         break;
@@ -166,12 +211,14 @@ InterCodes translate_Args(SyntaxTree args) {
 
 InterCodes translate_Exp(SyntaxTree exp) {
     InterCode code;
-    InterCodes result;
+    InterCodes result = NULL;
     SyntaxTree exp1, exp2, id, args;
     Operand op1, op2, op3;
     ArgList arlst;
     AliasTable newTable, targetTable;
+    FieldList fielist;
     char* realname1, *realname2;
+    int basicSize = 0;
     // printf("%d\n", exp->syntaxNum);
 
     // init place
@@ -208,8 +255,8 @@ InterCodes translate_Exp(SyntaxTree exp) {
                 insertInterCode(result, code);
             }
         }
-        // Exp1 is array elem (a[0] = b) 
-        else if (exp1->sons->sons->mytype == MID) {
+        // Exp1 is array elem (a[0] = b) or structure
+        else {
             result = translate_Exp(exp2);
             insertInterCodes(result, translate_Exp(exp1));
             assert(exp1->address != NULL);
@@ -363,19 +410,26 @@ InterCodes translate_Exp(SyntaxTree exp) {
         exp1 = exp->sons;
         exp2 = exp1->next->next;
         // get exp1
-        assert(exp1->sons->mytype == MID);
-        id = exp1->sons;
         // t1 = &exp1
         op1 = tmpOperand();
-        realname1 = findAlias(id->code);
-        op2 = addressOperand(realname1);
-        code = assignCode(op1, op2);
-        result = interCodes(code);
+        if (exp1->sons->mytype == MID) {
+            id = exp1->sons;
+            realname1 = findAlias(id->code);
+            op2 = addressOperand(realname1);
+            code = assignCode(op1, op2);
+            result = interCodes(code);
+        }
+        else {
+            result = translate_Exp(exp1);
+            code = assignCode(op1, exp1->address);
+            insertInterCode(result, code); 
+        }
         // get j
         insertInterCodes(result, translate_Exp(exp2));
-        // t2 = j * 4
+        // t2 = j * basicSize
         op2 = tmpOperand();
-        op3 = constOperand(4);
+        basicSize = sizeofType(exp1->type->u.array.elem);
+        op3 = constOperand(basicSize);
         code = binopCode(op2, op3, exp2->place, MULCODE);
         insertInterCode(result, code);
         // exp->address = t1 + t2
@@ -390,7 +444,79 @@ InterCodes translate_Exp(SyntaxTree exp) {
     // Exp DOT ID
     case 15:
         // TODO
-        assert(acceptStruct == 0);
+        exp1 = exp->sons;
+        id = exp1->next->next;
+        assert(isStruct(exp1->type));
+        fielist = exp1->type->u.structure;
+        // if (funDef) {
+        //     // t1 = &exp1
+        //     op1 = tmpOperand();
+        //     result = translate_Exp(exp1);
+        //     if (exp1->sons->mytype == MID) {
+        //         op2 = varOperand(exp1->sons->code);
+        //     }
+        //     else if (isArray(exp1->sons->type)) {
+        //         op2 = exp1->address;
+        //     }
+        //     else {
+        //         op2 = exp1->address;
+        //     }
+        //     code = assignCode(op1, op2);
+        //     insertInterCode(result, code);
+        //     // bias
+        //     while (strcmp(fielist->name, id->code) != 0) {
+        //         basicSize += sizeofType(fielist->type);
+        //         fielist = fielist->tail;
+        //     }
+        //     // exp->address = t1 + bias
+        //     exp->address = tmpOperand();
+        //     op2 = constOperand(basicSize);
+        //     code = binopCode(exp->address, op1, op2, ADDCODE);
+        //     insertInterCode(result, code);
+        //     // exp->place = *(exp->address)
+        //     op1 = contentOperand(exp->address->u.var_no);
+        //     code = assignCode(exp->place, op1);
+        //     insertInterCode(result, code);
+        // }
+        // else {
+            // t1 = &exp1
+            op1 = tmpOperand();
+            if (exp1->sons->mytype == MID) {
+                if (isParam(exp1->sons->code)) {
+                    op2 = varOperand(exp1->sons->code);
+                }
+                else {
+                    op2 = addressOperand(exp1->sons->code);
+                }
+                code = assignCode(op1, op2);
+                result = interCodes(code);
+            }
+            else if (isArray(exp1->sons->type)) {
+                result = translate_Exp(exp1);
+                code = assignCode(op1, exp1->address);
+                insertInterCode(result, code);
+            }
+            // struct.struct
+            else {
+                result = translate_Exp(exp1);
+                code = assignCode(op1, exp1->address);
+                insertInterCode(result, code);
+            }
+            // bias
+            while (strcmp(fielist->name, id->code) != 0) {
+                basicSize += sizeofType(fielist->type);
+                fielist = fielist->tail;
+            }
+            // exp->address = t1 + bias
+            exp->address = tmpOperand();
+            op2 = constOperand(basicSize);
+            code = binopCode(exp->address, op1, op2, ADDCODE);
+            insertInterCode(result, code);
+            // exp->place = *(exp->address)
+            op1 = contentOperand(exp->address->u.var_no);
+            code = assignCode(exp->place, op1);
+            insertInterCode(result, code);
+        // }
         break;
     // ID
     case 16:
@@ -417,6 +543,7 @@ InterCodes translate_Exp(SyntaxTree exp) {
 InterCodes translate_StmtList(SyntaxTree stmtList) {
     InterCodes result = NULL;
     SyntaxTree stmt, stmtList1;
+    // printf("%d\n", stmtList->syntaxNum);
     switch (stmtList->syntaxNum)
     {
     // Stmt StmtList
@@ -424,11 +551,15 @@ InterCodes translate_StmtList(SyntaxTree stmtList) {
         stmt = stmtList->sons;
         stmtList1 = stmt->next;
         result = translate_Stmt(stmt);
-        insertInterCodes(result, translate_StmtList(stmtList1));
+        if (result == NULL) {
+            result = translate_StmtList(stmtList1);
+        }
+        else {
+            insertInterCodes(result, translate_StmtList(stmtList1));
+        }
         break;
     // empty
     case 2:
-        result = NULL;
         break;
     default:
         break;
@@ -455,7 +586,20 @@ InterCodes translate_CompSt(SyntaxTree compSt) {
             // if (defList->specifier->kind == STRUCTURE) {
             // }
             if (isArray(defList->type)) {
-                op1 = spaceOperand(4 * defList->type->u.array.size);
+                basicSize = sizeofType(defList->specifier);
+                op1 = spaceOperand(basicSize * defList->type->u.array.size);
+                op2 = varOperand(defList->name);
+                code = decCode(op2, op1);
+                if (result == NULL) {
+                    result = interCodes(code);
+                }
+                else {
+                    insertInterCode(result, code);
+                }
+            }
+            else if (isStruct(defList->specifier)) {
+                basicSize = sizeofType(defList->specifier);
+                op1 = spaceOperand(basicSize);
                 op2 = varOperand(defList->name);
                 code = decCode(op2, op1);
                 if (result == NULL) {
@@ -495,7 +639,7 @@ InterCodes translate_CompSt(SyntaxTree compSt) {
 
 InterCodes translate_Stmt(SyntaxTree stmt) {
     InterCode code;
-    InterCodes result;
+    InterCodes result = NULL;
     Operand op1, op2, op3;
     SyntaxTree exp, stmt1, stmt2;
     switch (stmt->syntaxNum)
@@ -591,11 +735,12 @@ InterCodes translate_Stmt(SyntaxTree stmt) {
 }
 
 InterCodes translate_FunDec(SyntaxTree funDec) {
-    InterCodes result;
+    InterCodes result = NULL;
     InterCode code;
     Operand op1;
     SyntaxTree id;
     SymbolTable varList;
+    prTable = NULL;
     switch (funDec->syntaxNum)
     {
     // ID LP VarList RP
@@ -607,6 +752,7 @@ InterCodes translate_FunDec(SyntaxTree funDec) {
         result = interCodes(code);  
         while (varList != NULL) {
             op1 = varOperand(varList->name);
+            insertParamTable(varList->name);
             code = sinopCode(op1, PARAMCODE);
             insertInterCode(result, code);
             varList = varList->next;
