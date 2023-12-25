@@ -785,17 +785,23 @@ InterCodes translate_FunDec(SyntaxTree funDec) {
 
 
 void translateCode(SyntaxTree t) {
+    // if (t->mytype != MProgram) exit(1);
     topTable = symTable[0];
 
     switch (t->mytype)
     {
     case MProgram:
         // ExtDefList
+        // exit(1); // exit 1
+        // t->sons;
+        // exit(1); // exit 1
         translateCode(t->sons);
+        // exit(1); // exit 11
         t->intercodes = t->sons->intercodes;
         break;
     case MExtDefList:
         // ExtDef ExtDefList
+        // exit(1); // exit 11
         translateCode(t->sons);
         translateCode(t->sons->next);
         if (t->sons->intercodes == NULL) {
@@ -924,7 +930,6 @@ void genInterCode() {
 }
 
 void genAndDisplayInterCodes() {
-    alTable = aliasTable("", "");
-    translateCode(tree);
+    genInterCode();
     displayInterCodes(tree->intercodes);
 }

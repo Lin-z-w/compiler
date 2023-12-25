@@ -63,6 +63,7 @@ relop ">"|"<"|">="|"<="|"=="|"!="
 "while" { yylval = creatNode(yytext, MWHILE, yylloc.first_line, "WHILE", 0); return WHILE; }
 {letter}+({letter}|{digit})* { yylval = creatNode(yytext, MID, yylloc.first_line, "ID", 0); return ID; } 
 
+"\r" { }
 "\n" { yycolumn = 1; }
 "\t" { }
 " " { }

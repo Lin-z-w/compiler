@@ -43,7 +43,7 @@ test:
 	./parser ../Test/test1.cmm ../Test/result.s
 
 spim:
-	spim -file ../example/tmp.s
+	spim -file ../Test/result.s
 
 copy: 
 	make clean

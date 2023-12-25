@@ -25,7 +25,6 @@ int main(int argc, char** argv)  {
     // FILE* wf = fopen(argv[2], "w");
     freopen(argv[2], "w", stdout);
     genAndDisplayAsmCode();
-    // genAndDisplayInterCodes();
     fclose(rf);
     return 0;
 }

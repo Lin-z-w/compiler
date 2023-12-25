@@ -69,7 +69,6 @@ void storeOperand(Operand op, int r) {
 
 void genAndDisplayAsmCode() {
     genInterCode();
-    displayInterCodes(tree->intercodes);
     translateInterCode2Asm(tree->intercodes);
 }
 
@@ -455,7 +454,6 @@ void translateInterCode2Asm(InterCodes ics) {
         default:
             break;
         }
-        printf("\n");
         ics = ics->next;
     }
 }
