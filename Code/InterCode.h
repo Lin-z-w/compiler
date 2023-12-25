@@ -14,7 +14,7 @@ struct Operand_ {
     union {
         char* name;
         int value;
-        int lableNo;
+        int labelNo;
         int var_no;
         int space;
     } u;
@@ -26,7 +26,7 @@ struct InterCode_
         IFECODE, IFNECODE, IFGCODE, IFGECODE, IFLCODE, IFLECODE, RETURNCODE, DECCODE, ARGCODE, CALLCODE, PARAMCODE, READCODE, WRITECODE } kind;
     union {
         struct { Operand right, left; }         assign;
-        struct { Operand op1, op2, lable; }     ifcode;
+        struct { Operand op1, op2, label; }     ifcode;
         struct { Operand op, size; }            dec;
         struct { Operand ret, func; }           call;
         struct { Operand result, op1, op2; }    binop;
@@ -78,3 +78,5 @@ void insertArgList(ArgList argList1, ArgList argList2);
 
 // dispaly
 void displayInterCodes(InterCodes ics);
+void displayOperand(Operand op);
+int equalOperand(Operand op1, Operand op2);

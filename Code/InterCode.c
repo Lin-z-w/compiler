@@ -69,7 +69,7 @@ InterCode ifCode(Operand op1, Operand op2, Operand lable, int kind) {
     ic.kind = kind;
     ic.u.ifcode.op1 = op1;
     ic.u.ifcode.op2 = op2;
-    ic.u.ifcode.lable = lable;
+    ic.u.ifcode.label = lable;
     return ic;
 }
 
@@ -165,7 +165,7 @@ void displayOperand(Operand op) {
         printf("t%d", op->u.var_no);
         break;
     case LABLE:
-        printf("label%d", op->u.lableNo);
+        printf("label%d", op->u.labelNo);
         break;
     case CONTENT:
         printf("*t%d", op->u.var_no);
@@ -236,7 +236,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" == ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case IFNECODE:
             printf("IF ");
@@ -244,7 +244,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" != ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case IFGCODE:
             printf("IF ");
@@ -252,7 +252,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" > ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case IFGECODE:
             printf("IF ");
@@ -260,7 +260,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" >= ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case IFLCODE:
             printf("IF ");
@@ -268,7 +268,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" < ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case IFLECODE:
             printf("IF ");
@@ -276,7 +276,7 @@ void displayInterCodes(InterCodes ics) {
             printf(" <= ");
             displayOperand(code.u.ifcode.op2);
             printf(" GOTO ");
-            displayOperand(code.u.ifcode.lable);
+            displayOperand(code.u.ifcode.label);
             break;
         case RETURNCODE:
             printf("RETURN ");
@@ -315,4 +315,32 @@ void displayInterCodes(InterCodes ics) {
         printf("\n");
         ics = ics->next;
     }
+}
+
+int equalOperand(Operand op1, Operand op2) {
+    int res = 0;
+    if (op1->kind == op2->kind) {
+        switch (op1->kind)
+        {
+        case VARIABLE:
+        case ADDRESS:
+            res = (strcmp(op1->u.name, op2->u.name) == 0);
+            break;
+        case CONSTANT:
+            res = (op1->u.value == op2->u.value);
+            break;
+        case TEMP:
+        case CONTENT:
+            res = (op1->u.var_no == op2->u.var_no);
+            break;
+        case LABLE:
+            assert(0);
+        case SPACE:
+            res = (op1->u.space == op2->u.space);
+            break;
+        default:
+            break;
+        }
+    }
+    return res;
 }

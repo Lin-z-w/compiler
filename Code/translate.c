@@ -445,7 +445,6 @@ InterCodes translate_Exp(SyntaxTree exp) {
         break;
     // Exp DOT ID
     case 15:
-        // TODO
         exp1 = exp->sons;
         id = exp1->next->next;
         assert(isStruct(exp1->type));
@@ -920,6 +919,11 @@ void translateCode(SyntaxTree t) {
 }
 
 void genInterCode() {
+    alTable = aliasTable("", "");
+    translateCode(tree);
+}
+
+void genAndDisplayInterCodes() {
     alTable = aliasTable("", "");
     translateCode(tree);
     displayInterCodes(tree->intercodes);

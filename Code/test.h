@@ -1,3 +1,3 @@
-#include "translate.h"
+#include "genAsm.h"
 
 int testInterCodes();

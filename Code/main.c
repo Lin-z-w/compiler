@@ -24,7 +24,8 @@ int main(int argc, char** argv)  {
     semanticsAnalysis();
     // FILE* wf = fopen(argv[2], "w");
     freopen(argv[2], "w", stdout);
-    genInterCode();
+    genAndDisplayAsmCode();
+    // genAndDisplayInterCodes();
     fclose(rf);
     return 0;
 }

@@ -23,3 +23,4 @@ struct ParamTable_
 
 
 void genInterCode();
+void genAndDisplayInterCodes();
