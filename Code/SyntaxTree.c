@@ -6,37 +6,41 @@ const int MAX_NODES = 100000;
 
 void initTree() {
     tree = malloc(sizeof(Node) * MAX_NODES);
-    creatNode("!", MProgram, 0, "!");
+    creatNode("!", MProgram, 0, "!", 1);
 }
 
-void initNode(int t, char* v, enum MYTYPE mtype, int loc, char* na) {
-    tree[t].val = malloc(sizeof(char) * strlen(v));
-    strcpy(tree[t].val, v);
-    tree[t].type = mtype;
+void initNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {
     tree[t].parent = NULL;
     tree[t].next = NULL;
     tree[t].sons = NULL;
+
+    
+    tree[t].code = malloc(sizeof(char) * strlen(co)); strcpy(tree[t].code, co);
+    tree[t].mytype = mtype;
     tree[t].location = loc;
-    tree[t].name = malloc(sizeof(char) * strlen(na));
-    strcpy(tree[t].name, na);
+    tree[t].name = malloc(sizeof(char) * strlen(na)); strcpy(tree[t].name, na);
+    tree[t].syntaxNum = synNum;
+    tree[t].initExp = NULL;
+    tree[t].intercodes = NULL;
 }
 
-SyntaxTree creatNode(char* v, enum MYTYPE mtype, int loc, char* na) {
-    initNode(nodeIndex, v, mtype, loc, na);
+SyntaxTree creatNode(char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {
+    initNode(nodeIndex, co, mtype, loc, na, synNum);
     nodeIndex++;
     return tree + nodeIndex - 1;
 }
 
-void setNode(int t, char* v, enum MYTYPE mtype, int loc, char* na) {
-    tree[t].val = malloc(sizeof(char) * strlen(v));
-    strcpy(tree[t].val, v);
-    tree[t].type = mtype;
+void setNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum) {
     tree[t].parent = NULL;
     tree[t].next = NULL;
     tree[t].sons = NULL;
+    
+    tree[t].code = malloc(sizeof(char) * strlen(co)); strcpy(tree[t].code, co);
+    tree[t].mytype = mtype;
     tree[t].location = loc;
-    tree[t].name = malloc(sizeof(char) * strlen(na));
-    strcpy(tree[t].name, na);
+    tree[t].name = malloc(sizeof(char) * strlen(na)); strcpy(tree[t].name, na);
+    tree[t].syntaxNum = synNum;
+    tree[t].canBeLeftVal = 0;
 }
 
 void setSons(SyntaxTree p, SyntaxTree s) {
@@ -52,61 +56,42 @@ void setSons(SyntaxTree p, SyntaxTree s) {
     }
 }
 
-void displayTree() {
-    displayNode(tree[0], 0);
+void setType(SyntaxTree s, Type t) {
+    s->type = t;
 }
 
 void displayNode(Node n, int deep) {
-    if (n.type == MEMPTY) return;
+    if (n.mytype == MEMPTY) return;
+    SyntaxTree sons = n.sons;
     for (int i = 0; i < deep; i++) {
         printf("  ");
     }
     printf("%s", n.name);
-    switch (n.type)
+    switch (n.mytype)
     {
     case MID:
-        printf(": %s", n.val);
+        printf(": %s", n.code);
         break;
     case MTYPE:
-        printf(": %s", n.val);
+        printf(": %s", n.code);
         break;
     case MINT:
-        printf(": %d", atoi(n.val));
+        printf(": %d", atoi(n.code));
         break;
     case MFLOAT:
-        printf(": %f", atof(n.val));
+        printf(": %f", atof(n.code));
         break;
-    case MProgram:
-    case MExtDefList:
-    case MExtDef:
-    case MExtDecList:
-    case MSpecifier:
-    case MStructSpecifier:
-    case MOptTag:
-    case MTag:
-    case MVarDec:
-    case MFunDec:
-    case MVarList:
-    case MParamDec:
-    case MCompSt:
-    case MStmtList:
-    case MStmt:
-    case MDefList:
-    case MDef:
-    case MDecList:
-    case MDec:
-    case MExp:
-    case MArgs:
-        printf(" (%d)", n.location);
     default:
         break;
     }
-
     printf("\n");
-
-    SyntaxTree sons = n.sons;
     while (sons != NULL) {
         displayNode(*sons, deep+1);
         sons = sons->next;
     }
+
+}
+
+void displayTree() {
+    displayNode(tree[0], 0);
 }
