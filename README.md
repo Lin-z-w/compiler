@@ -8,6 +8,13 @@
 
 [Static Program Analysis | Tai-e (pascal-lab.net)](https://tai-e.pascal-lab.net/lectures.html)
 
+## 平台信息
+
+1. GNU Linux Release: Ubuntu 22.04, 5.10.16.3-microsoft-standard-WSL2
+2. GCC version: 11.4.0
+3. GNU Flex version: 2.6.4
+4. GNU Bison version: 3.8.2
+
 ## 实现功能
 
 在原本框架代码的基础上，实现了以下的机器无关代码优化
