@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
-#include "SymbolTable.h"
+#include <string.h>
+#include <stdio.h>
 
 enum MYTYPE {
     MEMPTY,
@@ -56,29 +57,20 @@ enum MYTYPE {
 
 typedef struct inode
 {
+    char* val;
     char* name;
-    enum MYTYPE mytype;
+    enum MYTYPE type;
     int location;
-    int syntaxNum;
     struct inode *parent, *sons, *next;
-
-    // info get in semantics
-    int canBeLeftVal;
-    char* code;
-    Type type;
-    SymbolTable defList, decList, varList, args;
-    struct inode *initExp;
 } Node;
 
 typedef Node* SyntaxTree;
 
 void initTree();
-SyntaxTree creatNode(char* co, enum MYTYPE mtype, int loc, char* na, int synNum);
-void initNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum);
-void setNode(int t, char* co, enum MYTYPE mtype, int loc, char* na, int synNum);
+SyntaxTree creatNode(char* v, enum MYTYPE mtype, int loc, char* na);
+void initNode(int t, char* v, enum MYTYPE mtype, int loc, char* na);
+void setNode(int t, char* v, enum MYTYPE mtype, int loc, char* na);
 void setSons(SyntaxTree p, SyntaxTree s);
-void setType(SyntaxTree s, Type t);
 void displayTree();
 void displayNode(Node n, int deep);
 
-extern SyntaxTree tree;

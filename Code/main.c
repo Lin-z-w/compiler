@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "semantics.h"
 void yyrestart(FILE* f);
 int yyparse();
 void initTree();
+void displayTree();
 extern int syntaxWrong;
 extern int lexicalWrong;
 extern int yydebug;
@@ -19,8 +19,8 @@ int main(int argc, char** argv)  {
     } 
     initTree();
     yyrestart(f); 
+    // yydebug = 1;
     yyparse(); 
-    // displayTree();
-    semanticsAnalysis();
+    if ((!syntaxWrong) && (!lexicalWrong)) displayTree();
     return 0;
 }
