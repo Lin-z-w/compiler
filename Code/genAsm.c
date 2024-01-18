@@ -78,6 +78,7 @@ void preCode() {
     printf("_ret: .asciiz \"\\n\" \n");
     printf(".globl main \n");
     printf(".text \n");
+    // read
     printf("read: \n");
     printf("li $v0, 4 \n");
     printf("la $a0, _prompt \n");
@@ -85,6 +86,7 @@ void preCode() {
     printf("li $v0, 5 \n");
     printf("syscall \n");
     printf("jr $ra \n");
+    // write
     printf("write: \n");
     printf("li $v0, 1 \n");
     printf("syscall \n");
@@ -93,6 +95,95 @@ void preCode() {
     printf("syscall \n");
     printf("move $v0, $0 \n");
     printf("jr $ra \n");
+
+    // while num test
+    // printf("move $fp, $sp\n");
+    // printf("li $t0, 0\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -4($fp)\n");
+    // printf("lw $t1, -4($fp)\n");
+    // printf("move $t0, $t1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -8($fp)\n");
+    // printf("label_0:\n");
+    // printf("lw $t1, -8($fp)\n");
+    // printf("move $t0, $t1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -12($fp)\n");
+    // printf("li $t0, 1000\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -16($fp)\n");
+    // printf("lw $t0, -12($fp)\n");
+    // printf("lw $t1, -16($fp)\n");
+    // printf("blt $t0, $t1, label_1\n");
+    // printf("j label_2\n");
+    // printf("label_1:\n");
+    // printf("lw $t1, -8($fp)\n");
+    // printf("move $t0, $t1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -20($fp)\n");
+    // printf("li $t0, 1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -24($fp)\n");
+    // printf("lw $t1, -20($fp)\n");
+    // printf("lw $t2, -24($fp)\n");
+    // printf("add $t0, $t1, $t2\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -28($fp)\n");
+    // printf("lw $t1, -28($fp)\n");
+    // printf("move $t0, $t1\n");
+    // printf("sw $t0, -8($fp)\n");
+    // printf("lw $t1, -8($fp)\n");
+    // printf("move $t0, $t1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -32($fp)\n");
+    // printf("j label_0\n");
+    // printf("label_2:\n");
+    // printf("li $t0, 0\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -36($fp)\n");
+    // printf("move $v0, $0\n");
+    // printf("move $sp, $fp\n");
+    // printf("jr $ra\n");
+
+    // while test
+    // while(1) {}
+
+    // spim while{} test
+    // printf("move $fp, $sp\n");
+    // printf("label_0:\n");
+    // printf("li $t0, 1\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -4($fp)\n");
+    // printf("lw $t0, -4($fp)\n");
+    // printf("li $t1, 0\n");
+    // printf("bne $t0, $t1, label1\n");
+    // printf("j label_2\n");
+    // printf("label_1:\n");
+    // printf("j label_0\n");
+    // printf("label_2:\n");
+    // printf("li $t0, 0\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -8($fp)\n");
+    // printf("move $v0, $t0\n");
+    // printf("move $sp, $fp\n");
+    // printf("jr $ra\n");
+
+    // add test
+    // printf("add:\n");
+    // printf("move $fp, $sp\n");
+    // printf("lw $t0, 8($fp)\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -4($fp)\n");
+    // printf("lw $t0, 12($fp)\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -8($fp)\n");
+    // printf("li $t0, 0\n");
+    // printf("addi $sp, $sp, -4\n");
+    // printf("sw $t0, -12($fp)\n");
+    // printf("move $v0, $t0\n");
+    // printf("move $sp, $fp\n");
+    // printf("jr $ra\n");
 }
 
 int reg(Operand op) {
@@ -115,7 +206,12 @@ void translateInterCode2Asm(InterCodes ics) {
             break;
         case FUNCTIONCODE:
             op1 = code.u.sinop.op;
+            if (strcmp(op1->u.name, "add") == 0) exit(5);
             printf("%s:\n", op1->u.name);
+            // }
+            // else {
+            //     printf("%sfunc:\n", op1->u.name);
+            // }
             printf("move $fp, $sp\n");
             fpOffset = 0;
             paramCnt = 0;
@@ -412,6 +508,7 @@ void translateInterCode2Asm(InterCodes ics) {
             // save ret address in ra
             printf("addi $sp, $sp, -4\n");
             printf("sw $ra, 0($sp)\n");
+            // printf("jal %sfunc\n", op2->u.name);
             printf("jal %s\n", op2->u.name);
             printf("lw $ra, 0($sp)\n");
             printf("addi $sp, $sp, 4\n");

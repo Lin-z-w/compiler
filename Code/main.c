@@ -28,8 +28,3 @@ int main(int argc, char** argv)  {
     fclose(rf);
     return 0;
 }
-
-// test
-// int main() {
-//   testInterCodes();
-// }
