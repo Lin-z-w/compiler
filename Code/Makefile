@@ -40,7 +40,10 @@ clean:
 	rm -f *~ 
 
 test:
-	./parser ../Test/test1.cmm out.ir
+	./parser ../Test/test1.cmm ../Test/result.s
+
+spim:
+	spim -file ../Test/result.s
 
 copy: 
 	make clean
